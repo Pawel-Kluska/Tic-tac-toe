@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  backend:
+    container_name: backend
+    build:
+      context: ./Server/
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    restart: always
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./Client/
+      dockerfile: DockerfileProd
+    ports:
+      - "80:80"
+    restart: always
+    expose:
+      - "80"
