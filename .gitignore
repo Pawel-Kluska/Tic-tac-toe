@@ -1,2 +1,7 @@
 Client/node_modules
 Server/node_modules
+.terraform
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+secret.auto.tfvars
