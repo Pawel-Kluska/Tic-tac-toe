@@ -133,34 +133,26 @@ output "server_public_ip" {
   value = aws_eip.one.public_ip
 }
 
-# 9. Create Ubuntu server and install/enable apache2
+# 9. Create Ubuntu server
 
-resource "aws_key_pair" "key_pair" {
-  key_name   = "key_pair"
-  public_key = var.public_key
+resource "aws_key_pair" "deployer" {
+  key_name = "key-for-demo"
+  public_key = "${file("key-for-demo.pub")}"
 }
 
 resource "aws_instance" "web-server-instance" {
-  ami               = "ami-080e1f13689e07408"
+  ami               = "ami-0c101f26f147fa7fd"
   instance_type     = "t2.micro"
   availability_zone = "us-east-1a"
-  key_name          = "key_pair"
-
+#  key_name = "key-for-demo"
+  depends_on = [aws_eip.one]
   network_interface {
     device_index         = 0
     network_interface_id = aws_network_interface.web-server-nic.id
   }
 
-  user_data = <<-EOF
-                 #!/bin/bash
-                 sudo apt update -y
-                 sudo snap install docker
-                 sudo systemctl start snap.docker.dockerd.service
-                 git clone https://github.com/Pawel-Kluska/Tic-tac-toe.git
-                 cd Tic-tac-toe/
-                 sudo docker compose -f docker-compose-prod.yml up -d
-                 EOF
+  user_data = "${file("install.sh")}"
   tags      = {
-    Name = "TicTacToe"
+    Name = "web-server"
   }
 }
