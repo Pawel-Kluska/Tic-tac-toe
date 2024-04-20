@@ -14,4 +14,4 @@ if [ ! -f "/usr/local/bin/docker-compose" ]; then
 fi
 echo "PUBLIC_IP=$(curl -s ifconfig.me | awk '{print $1}')" | sudo tee /home/ec2-user/Tic-tac-toe/.env > /dev/null
 git clone https://github.com/Pawel-Kluska/Tic-tac-toe.git /home/ec2-user/Tic-tac-toe
-sudo docker-compose -f /home/ec2-user/Tic-tac-toe/docker-compose-prod.yml up -d
+#sudo docker-compose -f /home/ec2-user/Tic-tac-toe/docker-compose-prod.yml up -d
