@@ -15,12 +15,12 @@ services:
     build:
       context: ./Client/
       dockerfile: DockerfileProd
+      args:
+        - PUBLIC_IP=${PUBLIC_IP}  # Pass PUBLIC_IP as a build argument
     ports:
       - "80:80"
     env_file:
       - .env
-    environment:
-      - PUBLIC_IP=${PUBLIC_IP}
     restart: always
     expose:
       - "80"

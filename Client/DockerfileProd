@@ -2,6 +2,9 @@ FROM node:latest as build
 WORKDIR /app
 
 ENV NODE_ENV prod
+ARG PUBLIC_IP
+
+ENV REACT_APP_PUBLIC_IP=$PUBLIC_IP
 
 COPY package.json ./
 COPY package-lock.json ./
