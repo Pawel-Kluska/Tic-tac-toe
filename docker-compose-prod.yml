@@ -17,6 +17,8 @@ services:
       dockerfile: DockerfileProd
     ports:
       - "80:80"
+    environment:
+      - PUBLIC_IP=${PUBLIC_IP}
     restart: always
     expose:
       - "80"
