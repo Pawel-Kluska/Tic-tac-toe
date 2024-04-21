@@ -30,6 +30,8 @@ io.on("connection", (socket) => {
     }
 
     if (opponentPlayer) {
+      opponentPlayer.playing = true;
+      currentUser.playing = true;
       allRooms.push({
         player1: opponentPlayer,
         player2: currentUser,
