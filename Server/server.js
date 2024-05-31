@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: "http://" + constants.FRONTEND_IP,
     },
 });
 
@@ -42,7 +42,7 @@ app.post('/login', async (req, res) => {
     params.append('grant_type', 'authorization_code');
     params.append('client_id', constants.CLIENT_ID);
     params.append('code', code);
-    params.append('redirect_uri', constants.REDIRECT_LOGIN_URL);
+    params.append('redirect_uri', 'http://' + constants.FRONTEND_IP);
 
     const encodedCredentials = Buffer.from(`${constants.CLIENT_ID}:${constants.CLIENT_SECRET}`).toString('base64');
 
