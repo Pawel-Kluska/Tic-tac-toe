@@ -17,7 +17,7 @@ services:
     build:
       context: ./Client/
       dockerfile: DockerfileProd
-    environment:
+      args:
         VITE_PUBLIC_IP: ${IP_ADDRESS}
     ports:
       - "80:80"
