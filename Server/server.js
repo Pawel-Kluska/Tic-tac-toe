@@ -13,7 +13,7 @@ const app = express();
 const router = express.Router();
 
 const corsOptions = {
-    origin: constants.FRONTEND_IP,
+    origin: "http://" + constants.FRONTEND_IP,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 };
