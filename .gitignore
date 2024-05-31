@@ -4,4 +4,4 @@ Server/node_modules
 terraform.tfstate
 terraform.tfstate.backup
 .terraform.lock.hcl
-secret.auto.tfvars
+terraform/secret.auto.tfvars
