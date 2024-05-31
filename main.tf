@@ -7,9 +7,6 @@ variable "aws_secret_access_key" {
 variable "aws_session_token" {
 }
 
-variable "public_key" {
-}
-
 provider "aws" {
   region     = "us-east-1"
   access_key = var.aws_access_key_id
@@ -140,18 +137,12 @@ output "server_public_ip" {
   value = aws_eip.one.public_ip
 }
 
-# 9. Create Ubuntu server
-
-resource "aws_key_pair" "deployer" {
-  key_name = "key-for-demo"
-  public_key = "${file("key-for-demo.pub")}"
-}
+# 9. Create server
 
 resource "aws_instance" "web-server-instance" {
   ami               = "ami-0c101f26f147fa7fd"
   instance_type     = "t2.micro"
   availability_zone = "us-east-1a"
-#  key_name = "key-for-demo"
   depends_on = [aws_eip.one]
   network_interface {
     device_index         = 0
