@@ -42,7 +42,7 @@ app.post('/login', async (req, res) => {
     params.append('grant_type', 'authorization_code');
     params.append('client_id', constants.CLIENT_ID);
     params.append('code', code);
-    params.append('redirect_uri', 'http://' + constants.FRONTEND_IP);
+    params.append('redirect_uri', 'https://' + constants.FRONTEND_IP);
 
     const encodedCredentials = Buffer.from(`${constants.CLIENT_ID}:${constants.CLIENT_SECRET}`).toString('base64');
 
