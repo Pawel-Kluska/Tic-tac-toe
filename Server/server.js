@@ -13,7 +13,7 @@ const app = express();
 const router = express.Router();
 
 const corsOptions = {
-    origin: "http://" + constants.FRONTEND_IP,
+    origin: "*",
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: "http://" + constants.FRONTEND_IP,
+        origin: "*",
     },
 });
 
@@ -36,13 +36,35 @@ const socketHandler = require("./socket_handler");
 router.use('/auth', auth_handler);
 app.use('/', router);
 
+let redirectIp = constants.FRONTEND_IP;
+
+async function getIp() {
+    try {
+        const response = await axios.get('https://api.ipify.org?format=json');
+        return response.data.ip;
+    } catch (error) {
+        console.error('Error fetching IP:', error);
+    }
+}
+
+if (redirectIp !== 'http://localhost:3000') {
+    getIp().then(ip => {
+        if (ip) {
+            redirectIp = 'https://' + ip;
+            console.log('Redirect IP:', redirectIp);
+            // Do something with the new redirectIp here
+        }
+    });
+}
+
 app.post('/login', async (req, res) => {
     const code = req.body.code;
+    console.log(constants.CLIENT_ID)
     const params = new URLSearchParams();
     params.append('grant_type', 'authorization_code');
     params.append('client_id', constants.CLIENT_ID);
     params.append('code', code);
-    params.append('redirect_uri', 'https://' + constants.FRONTEND_IP);
+    params.append('redirect_uri', redirectIp);
 
     const encodedCredentials = Buffer.from(`${constants.CLIENT_ID}:${constants.CLIENT_SECRET}`).toString('base64');
 
@@ -63,7 +85,7 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/refresh-token', async (req, res) => {
-    const { refresh_token } = req.body;
+    const {refresh_token} = req.body;
 
     const basicAuth = Buffer.from(`${constants.CLIENT_ID}:${constants.CLIENT_SECRET}`).toString('base64');
 
@@ -88,7 +110,7 @@ app.post('/refresh-token', async (req, res) => {
         res.status(200).json(response.data);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Failed to refresh token' });
+        res.status(500).json({error: 'Failed to refresh token'});
     }
 });
 
@@ -96,7 +118,7 @@ app.get('/auth/get-user', async (req, res) => {
     const accessToken = req.get("Authorization");
 
     if (!accessToken) {
-        return res.status(400).json({ error: 'AccessToken is required' });
+        return res.status(400).json({error: 'AccessToken is required'});
     }
 
     const region = constants.region; // Replace with your AWS region
@@ -110,7 +132,7 @@ app.get('/auth/get-user', async (req, res) => {
     };
 
     try {
-        const response = await axios.post(url, body, { headers });
+        const response = await axios.post(url, body, {headers});
         res.json(response.data);
     } catch (error) {
         console.error('Error calling Cognito:', error);

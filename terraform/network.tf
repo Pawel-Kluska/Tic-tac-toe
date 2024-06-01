@@ -1,69 +1,116 @@
-# network.tf
-
-# Fetch AZs in the current region
-data "aws_availability_zones" "available" {
-}
-
-resource "aws_vpc" "main" {
-  cidr_block = "172.17.0.0/16"
-}
-
-# Create var.az_count private subnets, each in a different AZ
-resource "aws_subnet" "private" {
-  count             = var.az_count
-  cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-  vpc_id            = aws_vpc.main.id
-}
-
-# Create var.az_count public subnets, each in a different AZ
-resource "aws_subnet" "public" {
-  count                   = var.az_count
-  cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, var.az_count + count.index)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
-  vpc_id                  = aws_vpc.main.id
-  map_public_ip_on_launch = true
-}
-
-# Internet Gateway for the public subnet
-resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.main.id
-}
-
-# Route the public subnet traffic through the IGW
-resource "aws_route" "internet_access" {
-  route_table_id         = aws_vpc.main.main_route_table_id
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.gw.id
-}
-
-# Create a NAT gateway with an Elastic IP for each private subnet to get internet connectivity
-resource "aws_eip" "gw" {
-  count      = var.az_count
-  domain = "vpc"
-  depends_on = [aws_internet_gateway.gw]
-}
-
-resource "aws_nat_gateway" "gw" {
-  count         = var.az_count
-  subnet_id     = element(aws_subnet.public.*.id, count.index)
-  allocation_id = element(aws_eip.gw.*.id, count.index)
-}
-
-# Create a new route table for the private subnets, make it route non-local traffic through the NAT gateway to the internet
-resource "aws_route_table" "private" {
-  count  = var.az_count
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = element(aws_nat_gateway.gw.*.id, count.index)
+resource "aws_vpc" "terra_vpc" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    name = "my_vpc"
   }
 }
 
-# Explicitly associate the newly created route tables to the private subnets (so they don't default to the main route table)
-resource "aws_route_table_association" "private" {
-  count          = var.az_count
-  subnet_id      = element(aws_subnet.private.*.id, count.index)
-  route_table_id = element(aws_route_table.private.*.id, count.index)
+resource "aws_internet_gateway" "terra_IGW" {
+  vpc_id = aws_vpc.terra_vpc.id
+  tags = {
+    name = "my_IGW"
+  }
+}
+
+resource "aws_route_table" "terra_route_table" {
+  vpc_id = aws_vpc.terra_vpc.id
+  tags = {
+    name = "my_route_table"
+  }
+}
+
+resource "aws_route" "terra_route" {
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id  = aws_internet_gateway.terra_IGW.id
+  route_table_id = aws_route_table.terra_route_table.id
+}
+
+resource "aws_subnet" "terra_subnet" {
+  vpc_id = aws_vpc.terra_vpc.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = var.availability_zone
+  map_public_ip_on_launch = true
+
+
+  tags = {
+    name = "my_subnet"
+  }
+}
+
+resource "aws_route_table_association" "terra_assoc" {
+  subnet_id = aws_subnet.terra_subnet.id
+  route_table_id = aws_route_table.terra_route_table.id
+}
+
+resource "aws_security_group" "terra_SG" {
+  name        = "sec_group"
+  description = "security group for the EC2 instance"
+  vpc_id      = aws_vpc.terra_vpc.id
+  ingress = [
+    {
+      description      = "https traffic"
+      from_port        = 443
+      to_port          = 443
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0", aws_vpc.terra_vpc.cidr_block]
+      ipv6_cidr_blocks  = []
+      prefix_list_ids   = []
+      security_groups   = []
+      self              = false
+    },
+    {
+      description      = "http traffic"
+      from_port        = 80
+      to_port          = 80
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0", aws_vpc.terra_vpc.cidr_block]
+      ipv6_cidr_blocks  = []
+      prefix_list_ids   = []
+      security_groups   = []
+      self              = false
+    },
+    {
+      description      = "ssh"
+      from_port        = 22
+      to_port          = 22
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0", aws_vpc.terra_vpc.cidr_block]
+      ipv6_cidr_blocks  = []
+      prefix_list_ids   = []
+      security_groups   = []
+      self              = false
+    },
+    {
+      description      = "backend"
+      from_port        = 8080
+      to_port          = 8080
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0", aws_vpc.terra_vpc.cidr_block]
+      ipv6_cidr_blocks  = []
+      prefix_list_ids   = []
+      security_groups   = []
+      self              = false
+    }
+  ]
+  egress = [
+    {
+      from_port        = 0
+      to_port          = 0
+      protocol         = "-1"
+      cidr_blocks      = ["0.0.0.0/0"]
+      description      = "Outbound traffic rule"
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    }
+  ]
+  tags = {
+    name = "allow_web"
+  }
+}
+
+resource "aws_network_interface" "terra_net_interface" {
+  subnet_id = aws_subnet.terra_subnet.id
+  security_groups = [aws_security_group.terra_SG.id]
 }
