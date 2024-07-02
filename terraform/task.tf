@@ -1,5 +1,5 @@
-resource "aws_ecs_task_definition" "deploy_ssl_terraform" {
-  family                   = "deploy-ssl-terraform"
+resource "aws_ecs_task_definition" "task_definition" {
+  family                   = "tictactoe_family"
   task_role_arn            = "arn:aws:iam::211125481775:role/LabRole"
   execution_role_arn       = "arn:aws:iam::211125481775:role/LabRole"
   network_mode             = "awsvpc"
@@ -15,7 +15,6 @@ resource "aws_ecs_task_definition" "deploy_ssl_terraform" {
     {
       name      = "tictactoe-backend"
       image     = "211125481775.dkr.ecr.us-east-1.amazonaws.com/tictactoe-backend:latest"
-      cpu       = 0
       essential = true
 
       portMappings = [
@@ -30,10 +29,6 @@ resource "aws_ecs_task_definition" "deploy_ssl_terraform" {
 
       environment = [
         {
-          name  = "IP_ADDRESS"
-          value = "https://12.32.23.1"
-        },
-        {
           name  = "CLIENT_ID"
           value = "78i4d1l8ouatghoueh5ja0h16l"
         },
@@ -43,15 +38,15 @@ resource "aws_ecs_task_definition" "deploy_ssl_terraform" {
         },
         {
           name  = "AWS_ACCESS_KEY_ID"
-          value = "ASIATCKAPGEX3AAJZWME"
+          value = "ASIATCKAPGEXWOF62LHL"
         },
         {
           name  = "AWS_SECRET_ACCESS_KEY"
-          value = "Jfnj59TRA7AvB6c3P+mLLdxTD+OlQ7nufWGW15D8"
+          value = "e+bU6hhiX5VvlEhbOuzXUuX1jkbe2yrKI+5t7pgO"
         },
         {
           name  = "AWS_SESSION_TOKEN"
-          value = "IQoJb3JpZ2luX2VjENT//////////wEaCXVzLXdlc3QtMiJGMEQCIDE0eD9Y7ya7Qe0znfFjUeDH6wo5BXm/o5s1YVnUmA85AiBS/YbsqS+R3hEgK1+iZu7ZUsc0k9i2iPW1RKMoYwHDDCqnAghdEAAaDDIxMTEyNTQ4MTc3NSIMzvn0Tvoq3NZnmL3tKoQCt2okjYIOHUu8rrX0OJ3b4iJ8AUZPEnPs3oDWFCqS15EbID8JcxzzpQHx9BctMKs1ZhcSIuGmpCa3iPG296khm9XE+tSSUwAcq65FpVH+Ug5d52zc2Fo7833U7OqpbkbgzfR+EQTRkZqJ6Gvwvvv6xMu7RRG+ZU8/qxbRJ4wESQav0OQKEungq7VUNr6Di958AEsQ10eieOebbTWowQ9Y6Socm11Xp84f+qLrQdUfLI6mmqV3rPOU3rJnjELFGG7NymVy9Gx6yZuGfDojStnEfAg1RiCncRjeEMe57sHoq41LGRb1GTo8dVQHINa9AtBWpSofAMLttLYJxu2ONHwVLGDQemgwt57ssgY6ngG8H2Yf3s/Uth/dkjFn2AN9ZGGtc46riL6GoXYYNWqEkmTCGK9ORKWNFCJ2TVVd03z1JPEdHWRKEYCsmLF+IegM+4v4rCgbjE5OkyN/v5ZpdT7Ji1j7SmV5MIfEruvXzqCf1haLEEgeehxDUpCk9xxH9ceV/TsSCaQ3AKSVf4X489vlZIvDtH+qEk2bo7t7PHkkwy47BV/nBc0qLRXeEQ=="
+          value = "IQoJb3JpZ2luX2VjEAYaCXVzLXdlc3QtMiJHMEUCIQDtdl5psGS7GyIEHlRPLGxHYONtqbvSE/2X9nGCxvcbvAIgB0aouebt2Me/htXCg/5qMCNHpbb7V7f+YlhdAQ9QPAgqsAIIj///////////ARAAGgwyMTExMjU0ODE3NzUiDGoWFuW5MBsfzWTM8iqEAjq58rJZ7Qn7GGD0ekv9A+uWNARI/8yfYn5SnGo4diPtNR838PZtmJ0rHuTrVdQupOfvLUHSkFxvLEhh8EXGkMOflmh/WXaAa/F+mmITd7B/YKNbSd+2TTJlXaeCDi5tWm4fYpYLsw4SdXUz7slqAqIHfWp75DNOmb+MFcEOj1/y2Qd2h803I+hGgik1sqg0ACmss9JpSbXHWTfiD29xECXgS2zeNVjaQgPRdDcqJ/AWhtu02JwGGtx/TZoMu8Mmt4REzWFAspLIWUlzen+TzmlpAaKHO+Pjh5q7VZ23x9ctcB89E6mkYEE53avm1wqzYdTrQgC5fEZtPMnyBI9vWwv39UD5MPqG97IGOp0BxNR4ulCSLoa0/SqS5G/JCfWGXtZQFQ9S1Mw0+SpMzLWXRXTqIbT9ZhuGkVcEf0uhOCkTsleiMmlx7/VJePwIfR/XW6dC2lgzXbYUk2ZB2On3GOzaPWPK0MUcKLOTfP6Vpj5d/WRVYaD8IlyYk7vVIbRCCl7jgt44z3rbTAOkwomyvP2PS7CjWBNECIHxp8Qc4RkuJmi+XpghwdpKkQ=="
         },
       ]
 
@@ -59,7 +54,7 @@ resource "aws_ecs_task_definition" "deploy_ssl_terraform" {
         logDriver = "awslogs"
         options   = {
           awslogs-create-group  = "true"
-          awslogs-group         = "/ecs/deploy-ssl"
+          awslogs-group         = "/ecs/tictactoedeploy"
           awslogs-region        = "us-east-1"
           awslogs-stream-prefix = "ecs"
         }
@@ -68,7 +63,6 @@ resource "aws_ecs_task_definition" "deploy_ssl_terraform" {
     {
       name      = "tictactoe-frontend"
       image     = "211125481775.dkr.ecr.us-east-1.amazonaws.com/tictactoe-frontend:latest"
-      cpu       = 0
       essential = true
 
       portMappings = [
